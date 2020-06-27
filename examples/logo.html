@@ -13,7 +13,7 @@
 <body>
     <div id="root"></div>
     <script type="module">
-        import { Events, Stage, gsap } from '../build/alien.js';
+        import gsap from 'https://unpkg.com/gsap/index.js';
 
         class Logo {
             constructor() {
@@ -27,14 +27,16 @@
             }
 
             addListeners() {
-                Stage.events.on(Events.RESIZE, this.onResize);
+                window.addEventListener('resize', this.onResize);
+                window.addEventListener('orientationchange', this.onResize);
                 this.element.addEventListener('mouseenter', this.onHover);
                 this.element.addEventListener('mouseleave', this.onHover);
                 this.element.addEventListener('click', this.onClick);
             }
 
             removeListeners() {
-                Stage.events.off(Events.RESIZE, this.onResize);
+                window.removeEventListener('resize', this.onResize);
+                window.removeEventListener('orientationchange', this.onResize);
                 this.element.removeEventListener('mouseenter', this.onHover);
                 this.element.removeEventListener('mouseleave', this.onHover);
                 this.element.removeEventListener('click', this.onClick);
@@ -66,10 +68,7 @@
              */
 
             onResize = () => {
-                const width = window.innerWidth;
-                const height = window.innerHeight;
-
-                if (width < height) {
+                if (window.innerWidth < window.innerHeight) {
                     gsap.set(this.element, {
                         top: 30,
                         left: 30,
@@ -95,8 +94,7 @@
             };
 
             onClick = () => {
-                //open('https://alien.js.org/');
-                Stage.setPath('/');
+                open('https://alien.js.org/');
             };
 
             /**
@@ -121,14 +119,21 @@
 
         class App {
             static async init() {
+                this.element;
+
+                this.initHTML();
                 this.initViews();
 
                 this.addListeners();
             }
 
+            static initHTML() {
+                this.element = document.getElementById('root');
+            }
+
             static initViews() {
                 this.logo = new Logo();
-                Stage.add(this.logo.element);
+                this.element.appendChild(this.logo.element);
             }
 
             static addListeners() {

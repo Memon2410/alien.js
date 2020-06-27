@@ -1,23 +1,24 @@
 import { Stage, WebAudio, clamp, tween } from 'alien.js';
 
+import { Config } from '../../config/Config.js';
 import { Events } from '../../config/Events.js';
 import { Global } from '../../config/Global.js';
 
 export class AudioController {
     static init() {
         this.water = {};
-
-        const sound = localStorage.getItem('sound');
-        Global.SOUND = sound ? JSON.parse(sound) : true;
+        this.easing = 0.97;
 
         if (!Global.SOUND) {
             WebAudio.gain.value = 0;
         }
 
         this.addListeners();
+        this.onResize();
     }
 
     static addListeners() {
+        Stage.events.on(Events.RESIZE, this.onResize);
         Stage.events.on(Events.VISIBILITY, this.onVisibility);
         document.addEventListener('click', this.onClick);
     }
@@ -33,7 +34,7 @@ export class AudioController {
         const speed = distance / time;
 
         this.water[id].mouseSpeed += speed * 0.01;
-        this.water[id].mouseSpeed *= 0.97;
+        this.water[id].mouseSpeed *= this.easing;
 
         if (Math.abs(this.water[id].mouseSpeed) < 0.001) {
             this.water[id].mouseSpeed = 0;
@@ -49,6 +50,14 @@ export class AudioController {
     /**
      * Event handlers
      */
+
+    static onResize = () => {
+        if (Stage.width < Config.BREAKPOINT) {
+            this.easing = 0.8;
+        } else {
+            this.easing = 0.97;
+        }
+    };
 
     static onVisibility = ({ type }) => {
         if (!Global.SOUND) {
@@ -77,19 +86,20 @@ export class AudioController {
             return;
         }
 
+        const normalX = x / Stage.width;
+        const normalY = y / Stage.height;
+
         if (!this.water[id]) {
             this.water[id] = {};
             this.water[id].mouseSpeed = 0;
-            this.water[id].lastEventTime = 0;
-            this.water[id].lastMouseX = 0.5;
-            this.water[id].lastMouseY = 0.5;
+            this.water[id].lastEventTime = WebAudio.context.currentTime;
+            this.water[id].lastMouseX = normalX;
+            this.water[id].lastMouseY = normalY;
             this.water[id].sound = WebAudio.createSound(id, WebAudio.get('water_loop').buffer);
 
             WebAudio.play(id, 0, true);
         }
 
-        const normalX = x / Stage.width;
-        const normalY = y / Stage.height;
         const speed = clamp(this.getMouseSpeed(id, normalX, normalY) * 0.5, 0, 1);
         const pan = clamp(((normalX * 2) - 1) * 0.8, -1, 1);
         const rate = clamp(0.8 + (1 - normalY) / 2.5, 0.8, 1.2);

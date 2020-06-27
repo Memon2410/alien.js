@@ -1,6 +1,7 @@
 import { Assets, Stage, WebAudio, ticker, wait } from 'alien.js';
 
 import { Events } from '../config/Events.js';
+import { Global } from '../config/Global.js';
 import { Data } from '../data/Data.js';
 import { AudioController } from './audio/AudioController.js';
 import { WorldController } from './world/WorldController.js';
@@ -11,6 +12,9 @@ import { UI } from '../views/UI.js';
 export class App {
     static async init(loader) {
         this.loader = loader;
+
+        const sound = localStorage.getItem('sound');
+        Global.SOUND = sound ? JSON.parse(sound) : true;
 
         Data.init();
         Data.Socket.init();

@@ -1,11 +1,10 @@
 import {
-    FloatType,
     HalfFloatType,
     Vector2,
     WebGLRenderTarget
 } from 'three';
 
-import { Device, Stage } from 'alien.js';
+import { Stage } from 'alien.js';
 
 import { Events } from '../../config/Events.js';
 import { Global } from '../../config/Global.js';
@@ -36,7 +35,7 @@ export class FluidController {
     static initRenderer() {
         // Render targets
         this.renderTargetA = new WebGLRenderTarget(this.width, this.height, {
-            type: Device.os === 'ios' ? HalfFloatType : FloatType,
+            type: HalfFloatType,
             depthBuffer: false,
             stencilBuffer: false
         });

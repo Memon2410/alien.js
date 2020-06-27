@@ -19,7 +19,7 @@ export class Preloader {
 
         Assets.options = {
             mode: 'cors',
-            //credentials: 'include'
+            // credentials: 'include'
         };
 
         // Assets.cache = true;

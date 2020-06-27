@@ -50,15 +50,21 @@ export class Thread extends EventEmitter {
     }
 
     addListeners() {
-        this.worker.addEventListener('message', ({ data }) => {
-            if (data.event) {
-                this.emit(data.event, data.message);
-            } else if (data.id) {
-                this.emit(data.id, data.message);
-                this.off(data.id);
-            }
-        });
+        this.worker.addEventListener('message', this.onMessage);
     }
+
+    removeListeners() {
+        this.worker.removeEventListener('message', this.onMessage);
+    }
+
+    onMessage = ({ data }) => {
+        if (data.event) {
+            this.emit(data.event, data.message);
+        } else if (data.id) {
+            this.emit(data.id, data.message);
+            this.off(data.id);
+        }
+    };
 
     createMethod(name) {
         this[name] = (message = {}, callback) => {
@@ -114,5 +120,13 @@ export class Thread extends EventEmitter {
         }
 
         this.worker.postMessage({ message }, message.buffer);
+    }
+
+    destroy() {
+        this.removeListeners();
+
+        this.worker.terminate();
+
+        return super.destroy();
     }
 }

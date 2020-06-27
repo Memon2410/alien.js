@@ -47,8 +47,6 @@ gsap.config({
     }
 });
 
-export { gsap } from 'gsap';
-
 /**
  * Global requestAnimationFrame event loop.
  *

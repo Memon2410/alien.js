@@ -9,17 +9,17 @@ import { Assets } from '../../loaders/Assets.js';
 import { WebAudioParam } from './WebAudioParam.js';
 import { Sound } from './Sound.js';
 
-export class WebAudio {
-    static init(assets) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
+const AudioContext = window.AudioContext || window.webkitAudioContext;
 
-        if (!AudioContext) {
+export class WebAudio {
+    static context = AudioContext ? new AudioContext() : null;
+
+    static init(assets = {}) {
+        if (!this.context) {
             return;
         }
 
         this.sounds = {};
-
-        this.context = new AudioContext();
 
         this.output = this.context.createGain();
         this.output.connect(this.context.destination);
@@ -29,7 +29,25 @@ export class WebAudio {
         for (const path in assets) {
             this.createSound(basename(path), assets[path]);
         }
+
+        this.addListeners();
     }
+
+    static addListeners() {
+        document.addEventListener('click', this.onClick);
+    }
+
+    static removeListeners() {
+        document.removeEventListener('click', this.onClick);
+    }
+
+    static onClick = () => {
+        document.removeEventListener('click', this.onClick);
+
+        if (this.context.state === 'suspended') {
+            this.context.resume();
+        }
+    };
 
     static createSound(id, buffer) {
         const sound = new Sound(this, id, buffer);
@@ -176,6 +194,8 @@ export class WebAudio {
     }
 
     static destroy() {
+        this.removeListeners();
+
         if (this.context) {
             for (const id in this.sounds) {
                 this.remove(id);
